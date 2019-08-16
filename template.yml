@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Janitor
+
+Parameters:
+  AmiMaxDays:
+    Description: days to keep amis
+    Default: 30
+    Type: Number
+
+Resources:
+  DeregisterAmi:
+    Description: Lambda jajaja
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jacek-test-dere
+      CodeUri: ./src/deregister_ami/
+      Handler: deregister_ami.lambda_handler
+      Runtime: python3.7
+      Timeout: 120
+      MemorySize: 128
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:DeregisterImage"
+              - "ec2:DescribeImages"
+              - "ec2:DescribeRegions"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "arn:aws:logs:*:*:*"
+      Environment:
+        Variables:
+          ami_max_days: !Ref AmiMaxDays
