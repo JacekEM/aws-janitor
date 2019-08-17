@@ -14,6 +14,9 @@ Parameters:
     Default: 50
     Type: Number
 
+Globals:
+  Function:
+    Runtime: python3.7
 Resources:
   DeregisterAmi:
     Description: Lambda deregisters old amis
@@ -22,7 +25,6 @@ Resources:
       FunctionName: janitor-deregister-amis
       CodeUri: ./src/deregister_ami/
       Handler: deregister_ami.lambda_handler
-      Runtime: python3.7
       Timeout: 120
       MemorySize: 128
       Policies:
@@ -50,7 +52,6 @@ Resources:
       FunctionName: janitor-delete-snapshot
       CodeUri: ./src/delete_ebs_snapshots/
       Handler: delete_ebs_snapshots.lambda_handler
-      Runtime: python3.7
       Timeout: 120
       MemorySize: 128
       Policies:
@@ -69,3 +70,25 @@ Resources:
       Environment:
         Variables:
           snapshot_max_days: !Ref SnapsshotMaxDays
+  DeleteEBSVolumes:
+    Description: Lambda deletes ebs in available state
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: janitor-delete-ebs-volume
+      CodeUri: ./src/delete_unattached_volumes/
+      Handler: delete_volumes.lambda_handler
+      Timeout: 120
+      MemorySize: 128
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:DeleteVolume"
+              - "ec2:DescribeVolumes"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "arn:aws:logs:*:*:*"
