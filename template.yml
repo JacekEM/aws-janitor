@@ -9,12 +9,17 @@ Parameters:
     Default: 30
     Type: Number
 
+  SnapsshotMaxDays:
+    Description: days to keep amis
+    Default: 50
+    Type: Number
+
 Resources:
   DeregisterAmi:
-    Description: Lambda jajaja
+    Description: Lambda deregisters old amis
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: jacek-test-dere
+      FunctionName: janitor-deregister-amis
       CodeUri: ./src/deregister_ami/
       Handler: deregister_ami.lambda_handler
       Runtime: python3.7
@@ -37,3 +42,30 @@ Resources:
       Environment:
         Variables:
           ami_max_days: !Ref AmiMaxDays
+
+  DeleteOldSnapshots:
+    Description: Lambda deletes old ebs snapshots
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: janitor-delete-snapshot
+      CodeUri: ./src/delete_ebs_snapshots/
+      Handler: delete_ebs_snapshots.lambda_handler
+      Runtime: python3.7
+      Timeout: 120
+      MemorySize: 128
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:DescribeSnapshots"
+              - "ec2:DeleteSnapshot"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "arn:aws:logs:*:*:*"
+      Environment:
+        Variables:
+          snapshot_max_days: !Ref SnapsshotMaxDays

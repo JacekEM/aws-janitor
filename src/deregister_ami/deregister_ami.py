@@ -15,9 +15,10 @@ def is_past_max_age(ami_creation_time):
 
 def lambda_handler(event, context):
 
-    ec2 = boto3.client('ec2', region_name='us-west-2')
+    ec2 = boto3.client('ec2')
     amis = ec2.describe_images(Owners=['self'])['Images']
-    excluded_amis = ec2.describe_images(Owners=['self'], Filters=[{'Name':'tag:Recycle', 'Values':['False', 'false']}])['Images']
+    excluded_amis = ec2.describe_images(Owners=['self'],
+                                        Filters=[{'Name':'tag:Recycle', 'Values':['False', 'false']}])['Images']
     excluded_amis_imageids = [i['ImageId'] for i in excluded_amis]
 
     for ami in amis:
